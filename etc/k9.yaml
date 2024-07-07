@@ -1,0 +1,33 @@
+
+system:
+
+   machine_group: "Development"
+   run_as: "key9"
+   cache_dir: "/opt/k9/cache"
+
+authentication:
+
+   api_key: "API_KEY"
+   company_uuid: "COMPANY_UUID"
+
+tail:
+
+   tail_file: "/var/log/auth.log"
+   waldo_file: "/opt/k9/cache/auth.waldo"
+   
+   client_logging_url: "https://client-logging.k9-api.io/client-logging/api/v1/post"
+
+urls:
+
+   query_ssh_keys: "https://ssh-api.k9.io/api/v1/ssh/query/"
+   query_group_name: "https://ssh-api.k9.io/api/v1/query/group/name"
+   query_group_gid: "https://ssh-api.k9.io/api/v1/query/group/gid"
+   query_group_id: "https://ssh-api.k9.io/api/v1/query/group/id"
+
+   query_passwd_username: "https://ssh-api.k9.io/api/v1/query/passwd/username"
+   query_passwd_uid: "https://ssh-api.k9.io/api/v1/query/passwd/uid"
+   query_passwd_id: "https://ssh-api.k9.io/api/v1/query/passwd/id"
+
+   query_all_users: "https://ssh-api.k9.io/api/v1/query/k9/all_users"
+
+
