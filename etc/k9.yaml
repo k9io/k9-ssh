@@ -4,6 +4,7 @@ system:
    machine_group: "Development"
    run_as: "key9"
    cache_dir: "/opt/k9/cache"
+   connection_timeout: 5
 
 authentication:
 
