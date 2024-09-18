@@ -39,6 +39,7 @@ type Configuration struct {
 		Machine_Group string `yaml:"machine_group"`
 		Run_As        string `yaml:"run_as"`
 		Cache_Dir     string `yaml:"cache_dir"`
+		Connection_Timeout int `yaml:"connection_timeout"`
 	}
 
 	Authentication struct {
@@ -104,6 +105,12 @@ func LoadConfig(config_file string) {
 
 	if Config.System.Machine_Group == "" {
 		log.Fatalf("'group' key not found in %s.\n", config_file)
+	}
+
+	/* Set a default value */
+
+	if Config.System.Connection_Timeout == 0 {
+		Config.System.Connection_Timeout = 5
 	}
 
 }

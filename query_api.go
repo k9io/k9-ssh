@@ -22,6 +22,7 @@ package main
 
 import (
 	"bytes"
+	"time"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -70,7 +71,7 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	/* Make POST request */
 
-	client := http.Client{}
+	client := http.Client{ Timeout: time.Duration( Config.System.Connection_Timeout ) * time.Second, }
 
 	req, err := http.NewRequest("POST", full_lookup, bytes.NewBuffer([]byte(post_data)))
 
