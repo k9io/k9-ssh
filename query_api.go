@@ -22,12 +22,12 @@ package main
 
 import (
 	"bytes"
-	"time"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type ssh_data struct {
@@ -49,7 +49,6 @@ type all_users struct {
 
 func Query_API(name string, remote string, display_ssh_keys bool) {
 
-	var sshkeys string
 	var post_data string
 
 	full_lookup := Config.Urls.Query_SSH_Keys + name + "/" + Config.System.Machine_Group
@@ -71,23 +70,15 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	/* Make POST request */
 
-	client := http.Client{ Timeout: time.Duration( Config.System.Connection_Timeout ) * time.Second, }
+	client := http.Client{Timeout: time.Duration(Config.System.Connection_Timeout) * time.Second}
 
 	req, err := http.NewRequest("POST", full_lookup, bytes.NewBuffer([]byte(post_data)))
 
 	if err != nil {
 
 		Log("Unable to establish API connection. Using cache for " + name)
-		sshkeys = Cache_Read(name)
-
-		/* display_ssh_keys - dumps keys to stdout.  -precache doesnt need the
-		   keys to stdout, so this can bypass that. */
-
-		if display_ssh_keys == true {
-			fmt.Print(sshkeys)
-		}
-
 		return
+
 	}
 
 	/* Send client UUID:API key */
@@ -99,14 +90,9 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	if err != nil {
 
-		fmt.Printf("Unable to parse keys: %s\n", err)
-		sshkeys = Cache_Read(name)
-
-		if display_ssh_keys == true {
-			fmt.Print(sshkeys)
-		}
-
+		Log("Unable to parse keys from client.Do()")
 		return
+
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -114,12 +100,6 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 	if err != nil {
 
 		Log("Unable to read body from API request. Using cache for " + name)
-		sshkeys = Cache_Read(name)
-
-		if display_ssh_keys == true {
-			fmt.Print(sshkeys)
-		}
-
 		return
 	}
 
@@ -144,13 +124,8 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 			if err := json.Unmarshal([]byte(s), &sshdata); err != nil {
 
 				Log("Error parsing JSON from API.  Reading cache for " + name)
-				sshkeys = Cache_Read(name)
-
-				if display_ssh_keys == true {
-					fmt.Print(sshkeys)
-				}
-
 				return
+
 			}
 
 			/* If there is no error, dump public keys from the API */
@@ -159,22 +134,8 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 				fmt.Println(sshdata.PublicKey)
 			}
 
-			/* Append all the keys to "sshkeys" */
-
-			if sshdata.PublicKey != "" {
-				sshkeys = sshdata.PublicKey + "\n" + sshkeys
-			}
-
 		}
 
-	}
-
-	/* If "sshkeys" is not blank,  write the cache out.  "Cache_Write" compares
-	   previous keys to current API supplied keys to determine if a write is
-	   needed */
-
-	if sshkeys != "" {
-		Cache_Write(name, sshkeys)
 	}
 
 }

@@ -36,10 +36,10 @@ import (
 
 type Configuration struct {
 	System struct {
-		Machine_Group string `yaml:"machine_group"`
-		Run_As        string `yaml:"run_as"`
-		Cache_Dir     string `yaml:"cache_dir"`
-		Connection_Timeout int `yaml:"connection_timeout"`
+		Machine_Group      string `yaml:"machine_group"`
+		Run_As             string `yaml:"run_as"`
+		Cache_Dir          string `yaml:"cache_dir"`
+		Connection_Timeout int    `yaml:"connection_timeout"`
 	}
 
 	Authentication struct {
