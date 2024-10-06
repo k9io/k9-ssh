@@ -38,7 +38,6 @@ type Configuration struct {
 	System struct {
 		Machine_Group      string `yaml:"machine_group"`
 		Run_As             string `yaml:"run_as"`
-		Cache_Dir          string `yaml:"cache_dir"`
 		Connection_Timeout int    `yaml:"connection_timeout"`
 	}
 
@@ -97,10 +96,6 @@ func LoadConfig(config_file string) {
 
 	if Config.System.Run_As == "" {
 		log.Fatalf("'run_as' key not found in %s.\n", config_file)
-	}
-
-	if Config.System.Cache_Dir == "" {
-		log.Fatalf("'cache_dir' key not found in %s.\n", config_file)
 	}
 
 	if Config.System.Machine_Group == "" {

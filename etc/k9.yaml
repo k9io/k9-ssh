@@ -1,14 +1,11 @@
 ################################################################################
 # k9.yaml
 # 
-# This is the master configuration file for all Key9 services. The following 
+# This is the master configuration file for most Key9 services. The following 
 # programs use this file:  
 # 
 # Program: /opt/k9/bin/k9-ssh [required]
 # Description:  A public key retrieval program used by your SSH daemon 
-#
-# Program: /opt/k9/bin/k9-proxy [optional]
-# Description: A network or host-based SSH key proxy and caching daemon
 #
 # Program: /opt/k9/bin/k9-tail [optional]
 # Description: A program that sends Key9 authentication logs to correlate 
@@ -27,7 +24,6 @@ system:
 
    machine_group: "YOUR_KEY9_MACHINE_GROUP"
    run_as: "key9"
-   cache_dir: "/opt/k9/cache"
    connection_timeout: 5
 
 ################################################################################
