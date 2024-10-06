@@ -1,24 +1,82 @@
+################################################################################
+# k9.yaml
+# 
+# This is the master configuration file for all Key9 services. The following 
+# programs use this file:  
+# 
+# Program: /opt/k9/bin/k9-ssh [required]
+# Description:  A public key retrieval program used by your SSH daemon 
+#
+# Program: /opt/k9/bin/k9-proxy [optional]
+# Description: A network or host-based SSH key proxy and caching daemon
+#
+# Program: /opt/k9/bin/k9-tail [optional]
+# Description: A program that sends Key9 authentication logs to correlate 
+#              public key usage 
+# 
+################################################################################
+
+################################################################################
+# system: This section establishes "global" system settings. The default 
+# configurations for this section should usually suffice.  You need to update
+# the "machine_group" to match the group assigned to this system in the Key9 
+# user interface.
+################################################################################
 
 system:
 
-   machine_group: "Development"
+   machine_group: "YOUR_KEY9_MACHINE_GROUP"
    run_as: "key9"
    cache_dir: "/opt/k9/cache"
    connection_timeout: 5
 
+################################################################################
+# authentication: This section configures how your system will authenticate with
+# Key9. The authentication data is used for public key retrieval (k9-ssh), 
+# sending client authentication logs (k9-tail), and by the proxy/cache service
+# (k9-proxy). You need to update the "api_key" and "company_uuid" to match your
+# organization's settings. You can obtain these settings via the Key9 user
+# interface.
+################################################################################
+
 authentication:
 
-   api_key: "API_KEY"
-   company_uuid: "COMPANY_UUID"
+   api_key: "YOUR_COMPANY_API_KEY"
+   company_uuid: "YOUR_COMPANY_UUID"
+
+################################################################################
+# tail: This section is used to configure the "k9-tail" program.  The default
+# configurations for this section should usually suffice.
+################################################################################
 
 tail:
 
-   tail_file: "/var/log/auth.log"
-   waldo_file: "/opt/k9/cache/auth.waldo"
-   
+   tail_file: "/var/log/auth.log"           # What file to "follow".
+   waldo_file: "/opt/k9/cache/auth.waldo"   # File that contains last location pointer
+  
+   # Where to send authentication data too . 
+ 
    client_logging_url: "https://client-logging.k9-api.io/client-logging/api/v1/post"
 
 urls:
+
+################################################################################
+# urls: This section is responsible for managing the communication between 
+# "k9-ssh" and the Key9 NSS library (k9-nss) with the Key9 API. If your system
+# does not use a proxy, the default configurations should be adequate. However,
+# if your system uses a local or network proxy, you will need to modify all the
+# values here. For instance, if your Key9 Proxy (k9-proxy) is operating on the
+# localhost (127.0.0.1) on port 8080 and is not utilizing TLS, you will need to
+# update all the values from: 
+#
+# https://ssh-api.k9.io
+# 
+# to:
+#
+# http://127.0.0.1:8080
+#
+#If you use Key9 as a network proxy, you should replace localhost (127.0.0.1) with your network proxy.
+################################################################################
 
    query_ssh_keys: "https://ssh-api.k9.io/api/v1/ssh/query/"
    query_group_name: "https://ssh-api.k9.io/api/v1/query/group/name"
