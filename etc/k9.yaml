@@ -71,7 +71,8 @@ urls:
 #
 # http://127.0.0.1:8080
 #
-#If you use Key9 as a network proxy, you should replace localhost (127.0.0.1) with your network proxy.
+# If you use Key9 as a network proxy, you should replace localhost (127.0.0.1) 
+# with your network proxy.
 ################################################################################
 
    query_ssh_keys: "https://ssh-api.k9.io/api/v1/ssh/query/"
