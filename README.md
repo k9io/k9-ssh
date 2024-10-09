@@ -8,12 +8,12 @@ Join the Key9 Slack channel
 What is they Key9-SSH?
 ------------------------
 
-“k9-ssh” is a small program used to retrieve public keys from the Key9 SSH API. Key9 allows for easy addition and removal of SSH keys for authentication. This program works with OpenSSH via the <b>AuthorizedKeysCommand</b> command.
+“k9-ssh” is a small program used to retrieve public keys from the Key9 SSH API. Key9 allows for easy addition and removal of SSH keys for authentication. This program works with OpenSSH via the "AuthorizedKeysCommand" command.
 
 <pre>
 AuthorizedKeysCommand /opt/k9/bin/k9-ssh --user=%u --remote="%C"
 AuthorizedKeysCommandUser key9
-<pre>
+</pre>
  
 Note:  The option <b>--remote="%C"</b> can be added if you are using OpenSSH version 9.4/9.4p1 (2023-08-10) or higher
 
