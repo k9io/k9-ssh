@@ -15,7 +15,7 @@ AuthorizedKeysCommand /opt/k9/bin/k9-ssh --user=%u
 AuthorizedKeysCommandUser key9
 </pre>
  
-Note:  The option <pre>--remote="%C"</pre> can be added if you are using OpenSSH version 9.4/9.4p1 (2023-08-10) or higher
+Note:  The option <b>--remote="%C"</b> can be added if you are using OpenSSH version 9.4/9.4p1 (2023-08-10) or higher
 
 This program relies on you having a company UUID and API key registered with Key9.
 
