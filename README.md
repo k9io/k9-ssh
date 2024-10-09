@@ -45,10 +45,10 @@ Add the "key9" user and group. k9-ssh runs as this user to protect the security 
 
 <pre>
 $ sudo addgroup --quiet --system key9
-$ sudo adduser --quiet --system --no-create-home --disabled-password --disabled-login --shell /usr/sbin/nologin --ingroup key9 --home / key9 
+$ sudo adduser --quiet --system --no-create-home --disabled-password --disabled-login --shell /bin/false --ingroup key9 --home / key9 
 </pre>
 
-Make sure you have Golang installed!
+Compiling and installing k9-ssh.  Make sure you have Golang installed!
 
 <pre>
 $ go mod init k9-ssh
