@@ -8,7 +8,7 @@ Join the Key9 Slack channel
 What is they Key9-SSH?
 ------------------------
 
-“k9-ssh” is a small program used to retrieve public keys from the Key9 SSH API. Key9 allows for easy addition and removal of SSH keys for authentication. This program works with OpenSSH via the <pre>AuthorizedKeysCommand</pre> command.  For example,  this would be added to your /etc/sshd/sshd_config : 
+“k9-ssh” is a small program used to retrieve public keys from the Key9 SSH API. Key9 allows for easy addition and removal of SSH keys for authentication. This program works with OpenSSH via the <b>AuthorizedKeysCommand</b> command.  For example,  this would be added to your /etc/sshd/sshd_config : 
 
 <pre>
 AuthorizedKeysCommand /opt/k9/bin/k9-ssh --user=%u
@@ -23,37 +23,52 @@ This program relies on you having a company UUID and API key registered with Key
 Use cases:
 ----------
 
-What software uses they Key9 Proxy?
------------------------------------
+Key9 is a provider of "Identity and Access Management" that offers a completely "passwordless" solution. The concept behind Key9 is that by not storing passwords, there is nothing for hackers to steal.
 
-The proxy is used by k9-ssh (public key retrieval) and k9-nss (operating system NSS library)
+Part of the Key9 services involves managing user access to the operating system (Linux, OpenBSD, NetBSD, etc) via Secure Shell (SSH) using public key cryptography.
 
-Building and installing the Key9 Proxy
---------------------------------------
+This repo contains 'k9-ssh', which serves as a bridge between OpenSSH and the Key9 SSH API.
+
+
+What software uses they Key9 SSH?
+---------------------------------
+
+OpenSSH
+
+
+Building and installing the Key9 SSH 
+------------------------------------
 
 Make sure you have Golang installed! 
 
+Add the "key9" user and group. k9-ssh runs as this user to protect the security of the system. 
+
 <pre>
-$ go mod init k9-proxy
+$ sudo addgroup --quiet --system key9
+$ sudo adduser --quiet --system --no-create-home --disabled-password --disabled-login --shell /usr/sbin/nologin --ingroup key9 --home / key9 
+</pre>
+
+Make sure you have Golang installed!
+
+<pre>
+$ go mod init k9-ssh
 $ go mod tidy
 $ go build
 $ sudo mkdir -p /opt/k9/etc /opt/k9/bin
-$ sudo cp etc/k9-proxy.yaml /opt/k9/etc
-$ sudo cp k9-proxy /opt/k9/bin
-$ sudo /opt/k9/bin/k9-proxy 	 # Run from the command line... Control C exits
-$ sudo cp k9-proxy.service /etc/systemd/system
-$ sudo systemctl enable k9-proxy
-$ sudo systemctl start k9-proxy
+$ sudo cp etc/k9.yaml /opt/k9/etc
+$ sudo cp k9-ssh /opt/k9/bin
+$ sudo nano /opt/k9/etc/k9.yaml    # Modify you company UUID, API Key and assign a "group" to the machine.
+$ sudo nano /etc/sshd/sshd_config  # Added the AuthorizedKeysCommand/AuthorizedKeysCommandUser specified above.
 </pre>
 
-Prebuild Key9 proxy binaries
-----------------------------
+Prebuild Key9 SSH binaries
+--------------------------
 
 If you are unable to access a Golang compiler, you can download pre-built/pre-compiled binaries. These binaries are available for various architectures (i386, amd64, arm64, etc) and multiple operating systems (Linux, Solaris, NetBSD, etc).
 
-You can find those binaries at: https://github.com/k9io/k9-binaries/tree/main/k9-proxy
+You can find those binaries at: https://github.com/k9io/k9-binaries/tree/main/k9-ssh
 
-You will need a copy of the 'k9-proxy' configuation file.  That is located at: 
+You will need a copy of the 'k9-ssh' configuation file.  That is located at: 
 
-https://github.com/k9io/k9-proxy/blob/main/etc/k9-proxy.yaml
+https://github.com/k9io/k9-ssh/blob/main/etc/k9.yaml
 
