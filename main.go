@@ -31,10 +31,15 @@ func main() {
 	username := flag.String("user", "", "System username to query.")
 	precache := flag.Bool("precache", false, "Pre-cache all users.")
 	remote := flag.String("remote", "", "Remote data.")
+	config_file := flag.String("config", "", "Configuration file.")
 
 	flag.Parse()
 
 	/* Sanity check */
+
+	if *config_file == "" { 
+		*config_file = "/opt/k9/etc/k9.yaml"	/* Set default */
+	}
 
 	if *username == "" && *precache == false {
 		Log("No username specified!")
@@ -43,10 +48,9 @@ func main() {
 
 	/* Load configuration */
 
-	LoadConfig("/opt/k9/etc/k9.yaml")
+	LoadConfig( *config_file )
 
-	/* See if the proper user is executing this routine.  We want to keep this locked down
-	   as much as possible */
+	/* See if the proper user is executing this routine.  We want to keep this locked down as much as possible */
 
 	C, err := user.Current()
 
