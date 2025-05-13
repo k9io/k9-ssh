@@ -22,6 +22,11 @@
 
 system:
 
+   # You can have multiple groups within 'machine_group'.  For example, a 
+   # 'machine_group' could be 'Development' or 'Development,Testing'.  If 
+   # comma-delimited, user from both groups, 'Development' and 'Testing'
+   # could login to this machine. 
+
    machine_group: "YOUR_KEY9_MACHINE_GROUP"
    run_as: "key9"
    connection_timeout: 5
