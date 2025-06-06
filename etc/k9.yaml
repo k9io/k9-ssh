@@ -31,6 +31,25 @@ system:
    run_as: "key9"
    connection_timeout: 5
 
+   # This section toggles support for the getpwent_r() and getgrent_r()
+   # function calls. Most modern applications don't need a full list of
+   # users or groups to function.  They typically call getpwnam_r(), 
+   # getpwuid_r(), getgrnam_r() and getgrgid_r(). 
+   # 
+   # Iterating through password database/group databases can also be 
+   # slow, especially on systems with many users or groups. 
+   #
+   # Retrieving information about all users/groups might be considered 
+   # unnecessary exposure of data for many applications. Security best 
+   # practices dictate that software should only access the information
+   # it absolutely needs.
+   #
+   # Only enabled these if you have a legacy application that requires 
+   # them. 
+
+   getpwent: disabled
+   getgrent: disabled
+
 ################################################################################
 # authentication: This section configures how your system will authenticate with
 # Key9. The authentication data is used for public key retrieval (k9-ssh), 
