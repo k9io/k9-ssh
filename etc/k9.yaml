@@ -48,7 +48,7 @@ system:
    # them. 
 
    getpwent: disabled
-   getgrent: disabled
+   getgrent: enabled
 
 ################################################################################
 # authentication: This section configures how your system will authenticate with
