@@ -29,7 +29,7 @@ func Log(message string) {
 
 	/* Open syslog */
 
-	logWriter, err := syslog.New(syslog.LOG_INFO, "k9-poc")
+	logWriter, err := syslog.New(syslog.LOG_INFO, "k9-ssh")
 
 	if err != nil {
 		log.Fatalln("Unable to open syslog:", err.Error())
