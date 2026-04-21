@@ -24,7 +24,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -95,7 +95,7 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
 
@@ -172,7 +172,7 @@ func PreCache() {
 		return
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		Log("Unable to read body for PreCache")
