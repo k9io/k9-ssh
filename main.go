@@ -26,7 +26,7 @@ import (
 	"os/user"
 )
 
-var version = "dev"
+var version = "1.1-0"
 
 func main() {
 
