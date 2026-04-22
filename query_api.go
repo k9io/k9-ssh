@@ -26,43 +26,56 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
+
+	gossh "golang.org/x/crypto/ssh"
 )
 
-type ssh_data struct {
+var validUsername = regexp.MustCompile(`^[a-z_][a-z0-9_\-]{0,31}$`)
+
+type sshData struct {
 	PublicKey string `json:"public_key"`
 }
 
-type ssh_bypass_users struct {
-	Bypass_Users string `json:"bypass_users"`
+type apiError struct {
+	Error string `json:"error"`
 }
 
-type all_users struct {
-	Os_Username string `json:"os_username"`
+type allUsers struct {
+	OsUsername string `json:"os_username"`
 }
 
 /********************************************************************************/
-/* Query_API - Does the bulk of the work.  When called,  this routine makes the */
-/* API call to retreieve public keys                                            */
+/* QueryAPI - Does the bulk of the work.  When called,  this routine makes the  */
+/* API call to retreieve public keys                                             */
 /********************************************************************************/
 
-func Query_API(name string, remote string, display_ssh_keys bool) {
+func QueryAPI(name string, remote string, displaySSHKeys bool) {
 
-	var post_data string
+	if !validUsername.MatchString(name) {
+		Log("Invalid username rejected: " + name)
+		return
+	}
 
-	full_lookup := Config.Urls.Query_SSH_Keys + name + "/" + Config.System.Machine_Group
+	var postData []byte
+
+	fullLookup := Config.Urls.QuerySSHKeys + name + "/" + Config.System.MachineGroup
 
 	/* If we have "remote" data, send it to the API */
 
 	if remote != "" {
 
-		post_data = fmt.Sprintf("{\"remote\":\"%s\"}", remote)
+		type remotePayload struct {
+			Remote string `json:"remote"`
+		}
+		postData, _ = json.Marshal(remotePayload{Remote: remote})
 		Log("Sending user '" + name + "' remote string: " + remote)
 
 	} else {
 
-		if display_ssh_keys == true {
+		if displaySSHKeys {
 			Log("No 'remote' string for user '" + name + ".")
 		}
 
@@ -70,9 +83,9 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	/* Make POST request */
 
-	client := http.Client{Timeout: time.Duration(Config.System.Connection_Timeout) * time.Second}
+	client := http.Client{Timeout: time.Duration(Config.System.ConnectionTimeout) * time.Second}
 
-	req, err := http.NewRequest("POST", full_lookup, bytes.NewBuffer([]byte(post_data)))
+	req, err := http.NewRequest("POST", fullLookup, bytes.NewBuffer(postData))
 
 	if err != nil {
 
@@ -83,8 +96,8 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	/* Send client UUID:API key */
 
-	api_key_temp := fmt.Sprintf("%s:%s", Config.Authentication.Company_UUID, Config.Authentication.Api_Key)
-	req.Header["API_KEY"] = []string{api_key_temp}
+	apiKey := fmt.Sprintf("%s:%s", Config.Authentication.CompanyUUID, Config.Authentication.APIKey)
+	req.Header["API_KEY"] = []string{apiKey}
 
 	res, err := client.Do(req)
 
@@ -94,6 +107,13 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 		return
 
 	}
+
+	if res.StatusCode != http.StatusOK {
+		Log(fmt.Sprintf("API returned unexpected status %d for user %s", res.StatusCode, name))
+		return
+	}
+
+	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 
@@ -107,9 +127,8 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 	temp := strings.Split(sb, "\n")
 
-	sshdata := ssh_data{}
-
-	// DEBUG: NO GOOD ERROR CHECKING! DOESNT SEE "error" KEYS.
+	data := sshData{}
+	apiErr := apiError{}
 
 	Log("Got good API response for " + name + ". Parsing keys")
 
@@ -119,9 +138,16 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 		if s != "" {
 
-			/* If an error is hit during decoded,  pull the "cached" keys */
+			/* Check if the API returned an error object */
 
-			if err := json.Unmarshal([]byte(s), &sshdata); err != nil {
+			if err := json.Unmarshal([]byte(s), &apiErr); err == nil && apiErr.Error != "" {
+				Log("API returned error for " + name + ": " + apiErr.Error)
+				return
+			}
+
+			/* If an error is hit during decode, pull the "cached" keys */
+
+			if err := json.Unmarshal([]byte(s), &data); err != nil {
 
 				Log("Error parsing JSON from API.  Reading cache for " + name)
 				return
@@ -130,8 +156,12 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 			/* If there is no error, dump public keys from the API */
 
-			if display_ssh_keys == true {
-				fmt.Println(sshdata.PublicKey)
+			if displaySSHKeys {
+				if _, _, _, _, err := gossh.ParseAuthorizedKey([]byte(data.PublicKey)); err != nil {
+					Log("Rejecting malformed public key for user " + name)
+					continue
+				}
+				fmt.Println(data.PublicKey)
 			}
 
 		}
@@ -149,21 +179,21 @@ func Query_API(name string, remote string, display_ssh_keys bool) {
 
 func PreCache() {
 
-	allusers := all_users{}
+	users := allUsers{}
 
 	Log("Starting pre-cache of SSH public keys")
 
-	client := http.Client{}
+	client := http.Client{Timeout: time.Duration(Config.System.ConnectionTimeout) * time.Second}
 
-	req, err := http.NewRequest("GET", Config.Urls.Query_All_Users, nil)
+	req, err := http.NewRequest("GET", Config.Urls.QueryAllUsers, nil)
 
 	if err != nil {
 		Log("Unable to establish API connection for PreCache.")
 		return
 	}
 
-	api_key_temp := fmt.Sprintf("%s:%s", Config.Authentication.Company_UUID, Config.Authentication.Api_Key)
-	req.Header["API_KEY"] = []string{api_key_temp}
+	apiKey := fmt.Sprintf("%s:%s", Config.Authentication.CompanyUUID, Config.Authentication.APIKey)
+	req.Header["API_KEY"] = []string{apiKey}
 
 	res, err := client.Do(req)
 
@@ -171,6 +201,13 @@ func PreCache() {
 		Log("Unable to parse data returned from API for PreCache.")
 		return
 	}
+
+	if res.StatusCode != http.StatusOK {
+		Log(fmt.Sprintf("API returned unexpected status %d for PreCache", res.StatusCode))
+		return
+	}
+
+	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 
@@ -187,16 +224,16 @@ func PreCache() {
 
 		if s != "" {
 
-			if err := json.Unmarshal([]byte(s), &allusers); err != nil {
+			if err := json.Unmarshal([]byte(s), &users); err != nil {
 
 				Log("Error parsing JSON from API.")
 				return
 
 			}
 
-			Log("Pre-caching '" + allusers.Os_Username + "'")
+			Log("Pre-caching '" + users.OsUsername + "'")
 
-			Query_API(allusers.Os_Username, "", false)
+			QueryAPI(users.OsUsername, "", false)
 
 		}
 

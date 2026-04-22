@@ -26,51 +26,55 @@ import (
 	"os/user"
 )
 
+var version = "dev"
+
 func main() {
 
 	username := flag.String("user", "", "System username to query.")
 	precache := flag.Bool("precache", false, "Pre-cache all users.")
 	remote := flag.String("remote", "", "Remote data.")
-	config_file := flag.String("config", "", "Configuration file.")
+	configFile := flag.String("config", "", "Configuration file.")
 
 	flag.Parse()
 
+	initLog()
+
 	/* Sanity check */
 
-	if *config_file == "" { 
-		*config_file = "/opt/k9/etc/k9.yaml"	/* Set default */
+	if *configFile == "" {
+		*configFile = "/opt/k9/etc/k9.yaml" /* Set default */
 	}
 
-	if *username == "" && *precache == false {
+	if *username == "" && !*precache {
 		Log("No username specified!")
 		os.Exit(1)
 	}
 
 	/* Load configuration */
 
-	LoadConfig( *config_file )
+	LoadConfig(*configFile)
 
 	/* See if the proper user is executing this routine.  We want to keep this locked down as much as possible */
 
-	C, err := user.Current()
+	c, err := user.Current()
 
 	if err != nil {
 		Log("Unable to determine username executing k9-ssh")
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
-	if C.Username != Config.System.Run_As {
-		Log("User " + C.Username + "does not matched expected user " + Config.System.Run_As)
-		os.Exit(-1)
+	if c.Username != Config.System.RunAs {
+		Log("User " + c.Username + " does not match expected user " + Config.System.RunAs)
+		os.Exit(1)
 	}
 
 	/* Do API calls */
 
 	if *username != "" {
-		Query_API(*username, *remote, true)
+		QueryAPI(*username, *remote, true)
 	}
 
-	if *precache == true {
+	if *precache {
 		PreCache()
 	}
 

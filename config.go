@@ -26,8 +26,9 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 /************************/
@@ -36,32 +37,33 @@ import (
 
 type Configuration struct {
 	System struct {
-		Machine_Group      string `yaml:"machine_group"`
-		Run_As             string `yaml:"run_as"`
-		Connection_Timeout int    `yaml:"connection_timeout"`
+		MachineGroup      string `yaml:"machine_group"`
+		RunAs             string `yaml:"run_as"`
+		ConnectionTimeout int    `yaml:"connection_timeout"`
+		AllowInsecure     bool   `yaml:"allow_insecure"`
 	}
 
 	Authentication struct {
-		Api_Key      string `yaml:"api_key"`
-		Company_UUID string `yaml:"company_uuid"`
+		APIKey      string `yaml:"api_key"`
+		CompanyUUID string `yaml:"company_uuid"`
 	}
 
 	Urls struct {
-		Query_SSH_Keys  string `yaml:"query_ssh_keys"`
-		Query_All_Users string `yaml:"query_all_users"`
+		QuerySSHKeys  string `yaml:"query_ssh_keys"`
+		QueryAllUsers string `yaml:"query_all_users"`
 	}
 }
 
 var Config *Configuration
 
-func LoadConfig(config_file string) {
+func LoadConfig(configFile string) {
 
 	/* Load config file */
 
-	file, err := os.Open(config_file)
+	file, err := os.Open(configFile)
 
 	if err != nil {
-		log.Fatalf("Cannot open '%s' YAML file.", config_file)
+		log.Fatalf("Cannot open '%s' YAML file.", configFile)
 	}
 
 	defer file.Close()
@@ -73,39 +75,50 @@ func LoadConfig(config_file string) {
 	err = d.Decode(&Config)
 
 	if err != nil {
-		log.Fatalf("Cannot parse '%s'.", config_file)
+		log.Fatalf("Cannot parse '%s'.", configFile)
 	}
 
 	/* Sanity Checks */
 
-	if Config.Authentication.Api_Key == "" {
-		log.Fatalf("'api_key' key not found in %s.\n", config_file)
+	if Config.Authentication.APIKey == "" {
+		log.Fatalf("'api_key' key not found in %s.\n", configFile)
 	}
 
-	if Config.Authentication.Company_UUID == "" {
-		log.Fatalf("'company_uuid' key not found in %s.\n", config_file)
+	if Config.Authentication.CompanyUUID == "" {
+		log.Fatalf("'company_uuid' key not found in %s.\n", configFile)
 	}
 
-	if Config.Urls.Query_SSH_Keys == "" {
-		log.Fatalf("'query_ssh_keys' key not found in %s.\n", config_file)
+	if Config.Urls.QuerySSHKeys == "" {
+		log.Fatalf("'query_ssh_keys' key not found in %s.\n", configFile)
 	}
 
-	if Config.Urls.Query_All_Users == "" {
-		log.Fatalf("'query_k9_allusers' key not found in %s.\n", config_file)
+	if Config.Urls.QueryAllUsers == "" {
+		log.Fatalf("'query_all_users' key not found in %s.\n", configFile)
 	}
 
-	if Config.System.Run_As == "" {
-		log.Fatalf("'run_as' key not found in %s.\n", config_file)
+	if Config.System.RunAs == "" {
+		log.Fatalf("'run_as' key not found in %s.\n", configFile)
 	}
 
-	if Config.System.Machine_Group == "" {
-		log.Fatalf("'group' key not found in %s.\n", config_file)
+	if Config.System.MachineGroup == "" {
+		log.Fatalf("'machine_group' key not found in %s.\n", configFile)
+	}
+
+	/* Reject plain HTTP URLs unless explicitly permitted */
+
+	if !Config.System.AllowInsecure {
+		if strings.HasPrefix(Config.Urls.QuerySSHKeys, "http://") {
+			log.Fatalf("Refusing plaintext HTTP URL for query_ssh_keys. Set allow_insecure: true to override.")
+		}
+		if strings.HasPrefix(Config.Urls.QueryAllUsers, "http://") {
+			log.Fatalf("Refusing plaintext HTTP URL for query_all_users. Set allow_insecure: true to override.")
+		}
 	}
 
 	/* Set a default value */
 
-	if Config.System.Connection_Timeout == 0 {
-		Config.System.Connection_Timeout = 5
+	if Config.System.ConnectionTimeout == 0 {
+		Config.System.ConnectionTimeout = 5
 	}
 
 }

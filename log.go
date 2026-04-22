@@ -25,17 +25,17 @@ import (
 	"log/syslog"
 )
 
-func Log(message string) {
+var logWriter *syslog.Writer
 
-	/* Open syslog */
-
-	logWriter, err := syslog.New(syslog.LOG_INFO, "k9-ssh")
-
+func initLog() {
+	var err error
+	logWriter, err = syslog.New(syslog.LOG_AUTH|syslog.LOG_INFO, "k9-ssh")
 	if err != nil {
 		log.Fatalln("Unable to open syslog:", err.Error())
 	}
-
 	log.SetOutput(logWriter)
-	log.Println(message)
+}
 
+func Log(message string) {
+	log.Println(message)
 }
