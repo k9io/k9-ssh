@@ -31,7 +31,6 @@ var version = "1.1-0"
 func main() {
 
 	username := flag.String("user", "", "System username to query.")
-	precache := flag.Bool("precache", false, "Pre-cache all users.")
 	remote := flag.String("remote", "", "Remote data.")
 	configFile := flag.String("config", "", "Configuration file.")
 
@@ -45,7 +44,7 @@ func main() {
 		*configFile = "/opt/k9/etc/k9.yaml" /* Set default */
 	}
 
-	if *username == "" && !*precache {
+	if *username == "" {
 		Log("No username specified!")
 		os.Exit(1)
 	}
@@ -72,10 +71,6 @@ func main() {
 
 	if *username != "" {
 		QueryAPI(*username, *remote, true)
-	}
-
-	if *precache {
-		PreCache()
 	}
 
 }

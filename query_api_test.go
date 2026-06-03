@@ -45,8 +45,8 @@ func TestValidUsername(t *testing.T) {
 		"foo/bar",
 		"user?x=1",
 		"user#hash",
-		"User",          // uppercase
-		"123user",       // starts with digit
+		"User",                  // uppercase
+		"123user",               // starts with digit
 		strings.Repeat("a", 33), // too long
 	}
 	for _, u := range invalid {
@@ -168,49 +168,4 @@ func TestQueryAPI_MalformedPublicKey(t *testing.T) {
 	if strings.TrimSpace(string(out)) != "" {
 		t.Errorf("expected malformed key to be rejected, got: %q", string(out))
 	}
-}
-
-// --- PreCache ---
-
-func TestPreCache_MultipleUsers(t *testing.T) {
-	keyLine := `{"public_key":"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GkZE test@example.com"}`
-
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/users") {
-			fmt.Fprintln(w, `{"os_username":"alice"}`)
-			fmt.Fprintln(w, `{"os_username":"bob"}`)
-		} else {
-			fmt.Fprintln(w, keyLine)
-		}
-	}))
-	defer srv.Close()
-
-	Config = testConfig(srv.URL)
-
-	// Should complete without panic
-	PreCache()
-}
-
-func TestPreCache_EmptyResponse(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-	defer srv.Close()
-
-	Config = testConfig(srv.URL)
-
-	// Should complete without panic or error
-	PreCache()
-}
-
-func TestPreCache_Non200(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-	}))
-	defer srv.Close()
-
-	Config = testConfig(srv.URL)
-
-	// Should bail cleanly without panic
-	PreCache()
 }
