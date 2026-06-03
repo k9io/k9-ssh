@@ -26,7 +26,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -40,7 +39,6 @@ type Configuration struct {
 		MachineGroup      string `yaml:"machine_group"`
 		RunAs             string `yaml:"run_as"`
 		ConnectionTimeout int    `yaml:"connection_timeout"`
-		AllowInsecure     bool   `yaml:"allow_insecure"`
 	}
 
 	Authentication struct {
@@ -50,7 +48,6 @@ type Configuration struct {
 
 	Urls struct {
 		QuerySSHKeys  string `yaml:"query_ssh_keys"`
-		QueryAllUsers string `yaml:"query_all_users"`
 	}
 }
 
@@ -92,27 +89,12 @@ func LoadConfig(configFile string) {
 		log.Fatalf("'query_ssh_keys' key not found in %s.\n", configFile)
 	}
 
-	if Config.Urls.QueryAllUsers == "" {
-		log.Fatalf("'query_all_users' key not found in %s.\n", configFile)
-	}
-
 	if Config.System.RunAs == "" {
 		log.Fatalf("'run_as' key not found in %s.\n", configFile)
 	}
 
 	if Config.System.MachineGroup == "" {
 		log.Fatalf("'machine_group' key not found in %s.\n", configFile)
-	}
-
-	/* Reject plain HTTP URLs unless explicitly permitted */
-
-	if !Config.System.AllowInsecure {
-		if strings.HasPrefix(Config.Urls.QuerySSHKeys, "http://") {
-			log.Fatalf("Refusing plaintext HTTP URL for query_ssh_keys. Set allow_insecure: true to override.")
-		}
-		if strings.HasPrefix(Config.Urls.QueryAllUsers, "http://") {
-			log.Fatalf("Refusing plaintext HTTP URL for query_all_users. Set allow_insecure: true to override.")
-		}
 	}
 
 	/* Set a default value */
