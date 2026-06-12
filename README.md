@@ -6,70 +6,58 @@ Join the Key9 Slack channel
 [![Slack](./images/slack.png)](https://key9identity.slack.com/)
 
 
-What is they Key9-SSH?
-------------------------
+# k9-ssh
 
-“k9-ssh” is a small program used to retrieve public keys from the Key9 SSH API. Key9 allows for easy addition and removal of SSH keys for authentication. This program works with OpenSSH via the <b>AuthorizedKeysCommand</b> command.  For example,  this would be added to your /etc/sshd/sshd_config : 
+**k9-ssh** is a lightweight SSH public key retrieval agent that bridges OpenSSH with the [Key9](https://k9.io) Identity and Access Management (IAM) platform. It enables centralized, passwordless SSH authentication across your fleet without distributing or managing individual `authorized_keys` files.
 
-<pre>
-AuthorizedKeysCommand /opt/k9/bin/k9-ssh --user=%u
-AuthorizedKeysCommandUser key9
-</pre>
- 
-Note:  The option <b>--remote="%C"</b> can be added if you are using OpenSSH version 9.4/9.4p1 (2023-08-10) or higher
+## How It Works
 
-This program relies on you having a company UUID and API key registered with Key9.
+OpenSSH's `AuthorizedKeysCommand` directive allows sshd to call an external program at login time to retrieve a user's authorized public keys. k9-ssh implements this interface: when a user attempts to log in, sshd calls k9-ssh with the username, k9-ssh queries the Key9 API, validates each returned key, and prints valid keys to stdout for sshd to evaluate.
+
+```
+User SSH Login
+     │
+     ▼
+sshd (AuthorizedKeysCommand)
+     │
+     ▼
+k9-ssh --user=<username> [--remote=<client-info>]
+     │
+     ├── Load /opt/k9/etc/k9.yaml
+     ├── POST https://ssh-api.k9.io/api/v1/ssh/query/<user>/<group>
+     └── Validate & print public keys
+     │
+     ▼
+sshd completes authentication
+```
+
+## Key Features
+
+- **Centralized key management** — public keys live in Key9, not on individual servers
+- **Machine group scoping** — restrict which Key9 users can log in to which groups of machines
+- **Fail-safe design** — errors log silently without exposing key material
+- **Minimal footprint** — ~670 lines of Go, statically compiled, no libc dependency
+- **Full audit trail** — every operation logged to syslog `AUTH` facility
+- **Platform portable** — Linux, FreeBSD, OpenBSD, NetBSD, Solaris, and more
+
+## Supported Platforms
+
+k9-ssh ships as statically compiled binaries for all major Unix-like operating systems and architectures supported by Go, including:
+
+- Linux (amd64, arm64, i386, armv6, armv7, riscv64, and more)
+- FreeBSD (amd64, arm64, i386)
+- OpenBSD (amd64, arm64)
+- NetBSD (amd64, arm64)
+- Solaris / illumos (amd64)
+- macOS / Darwin (amd64, arm64)
+
+## License
+
+k9-ssh is released under the GNU General Public License v2.
 
 
-Use cases:
-----------
+## Quick links
 
-Key9 is a provider of "Identity and Access Management" that offers a completely "passwordless" solution. The concept behind Key9 is that by not storing passwords, there is nothing for hackers to steal.
-
-Part of the Key9 services involves managing user access to the operating system (Linux, OpenBSD, NetBSD, etc) via Secure Shell (SSH) using public key cryptography.
-
-This repo contains 'k9-ssh', which serves as a bridge between OpenSSH and the Key9 SSH API.
-
-
-What software uses they Key9 SSH?
----------------------------------
-
-OpenSSH
-
-
-Building and installing the Key9 SSH 
-------------------------------------
-
-Make sure you have Golang installed! 
-
-Add the "key9" user and group. k9-ssh runs as this user to protect the security of the system. 
-
-<pre>
-$ sudo addgroup --quiet --system key9
-$ sudo adduser --quiet --system --no-create-home --disabled-password --disabled-login --shell /bin/false --ingroup key9 --home / key9 
-</pre>
-
-Compiling and installing k9-ssh.  Make sure you have Golang installed!
-
-<pre>
-$ go mod init k9-ssh
-$ go mod tidy
-$ go build
-$ sudo mkdir -p /opt/k9/etc /opt/k9/bin
-$ sudo cp etc/k9.yaml /opt/k9/etc
-$ sudo cp k9-ssh /opt/k9/bin
-$ sudo nano /opt/k9/etc/k9.yaml    # Modify you company UUID, API Key and assign a "group" to the machine.
-$ sudo nano /etc/sshd/sshd_config  # Added the AuthorizedKeysCommand/AuthorizedKeysCommandUser specified above.
-</pre>
-
-Prebuild Key9 SSH binaries
---------------------------
-
-If you are unable to access a Golang compiler, you can download pre-built/pre-compiled binaries. These binaries are available for various architectures (i386, amd64, arm64, etc) and multiple operating systems (Linux, Solaris, NetBSD, etc).
-
-You can find those binaries at: https://github.com/k9io/k9-binaries/tree/main/k9-ssh
-
-You will need a copy of the 'k9-ssh' configuation file.  That is located at: 
-
-https://github.com/k9io/k9-ssh/blob/main/etc/k9.yaml
+* [Key9 documentation](https://docs.k9.io)
+* [k9-ssh documentation](https://docs.k9.io/key9-identity/k9-ssh)
 
