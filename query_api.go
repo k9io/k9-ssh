@@ -157,6 +157,10 @@ func QueryAPI(name string, remote string, displaySSHKeys bool) {
 			/* If there is no error, dump public keys from the API */
 
 			if displaySSHKeys {
+				if data.PublicKey == "" {
+					Log("Warning: No key found for user " + name)
+					continue
+				}
 				if _, _, _, _, err := gossh.ParseAuthorizedKey([]byte(data.PublicKey)); err != nil {
 					Log("Rejecting malformed public key for user " + name)
 					continue
