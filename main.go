@@ -21,20 +21,30 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
+	"fmt"
 	"os"
 	"os/user"
+	"strings"
 )
 
-var version = "1.1-0"
+//go:embed VERSION
+var version string
 
 func main() {
 
 	username := flag.String("user", "", "System username to query.")
 	remote := flag.String("remote", "", "Remote data.")
 	configFile := flag.String("config", "", "Configuration file.")
+	showVersion := flag.Bool("version", false, "Print version and exit.")
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("k9-ssh %s\n", strings.TrimSpace(version))
+		os.Exit(0)
+	}
 
 	initLog()
 
