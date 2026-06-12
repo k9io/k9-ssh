@@ -41,7 +41,6 @@ If you are also using the Key9 NSS library on the same host, update the remainin
 ```yaml
 urls:
   query_ssh_keys:        "http://127.0.0.1:8080/api/v1/ssh/query/"
-  query_all_users:       "http://127.0.0.1:8080/api/v1/query/k9/all_users"
   query_group_name:      "http://127.0.0.1:8080/api/v1/query/group/name"
   query_group_gid:       "http://127.0.0.1:8080/api/v1/query/group/gid"
   query_group_id:        "http://127.0.0.1:8080/api/v1/query/group/id"

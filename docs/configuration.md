@@ -49,7 +49,6 @@ urls:
   # The following URL fields are used by the Key9 NSS library (libnss-k9)
   # and are not required for k9-ssh alone. Include them if you are also
   # deploying the NSS library on this host.
-  query_all_users:       "https://ssh-api.k9.io/api/v1/query/k9/all_users"
   query_group_name:      "https://ssh-api.k9.io/api/v1/query/group/name"
   query_group_gid:       "https://ssh-api.k9.io/api/v1/query/group/gid"
   query_group_id:        "https://ssh-api.k9.io/api/v1/query/group/id"
